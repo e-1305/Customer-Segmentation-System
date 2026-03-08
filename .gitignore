@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Raw data — never commit heavy Excel/CSV files
+data/*.xlsx
+data/*.xls
+data/*.csv
+
+# Processed data — keep structure, ignore files
+data/*.parquet
+!data/.gitkeep
+
+# Model files
+results/models/*.pkl
+!results/models/.gitkeep
+
+# Commit plots and segment CSVs (needed for README display)
+!results/plots/*.png
+!results/segments/*.csv
+!results/segments/*.json
+
+# OS
+.DS_Store
+Thumbs.db
