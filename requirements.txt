@@ -5,6 +5,4 @@ seaborn
 openpyxl
 pyarrow
 requests
-scikit-learn
-xgboost
-umap-learn
+jupyter
