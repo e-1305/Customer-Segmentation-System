@@ -8,7 +8,8 @@ venv/
 # Jupyter
 .ipynb_checkpoints/
 
-# Raw data — never commit heavy Excel/CSV files
+# Raw data at repo root is ignored. The UCI dataset in notebooks/data/ is
+# committed on purpose (CC BY 4.0) so the notebook runs offline.
 data/*.xlsx
 data/*.xls
 data/*.csv

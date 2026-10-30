@@ -1,58 +1,59 @@
 # Customer Segmentation System
-### RFM Analysis · K-Means Clustering · Segment Profiling · Lookalike Modeling
+### RFM Analysis · Rule-Based Scoring · Segment Profiling
 
-> A consulting-grade customer analytics pipeline that transforms raw e-commerce transaction data into actionable business intelligence — built in Google Colab on real UK retail data.
+> A consulting-style customer analytics pipeline that turns raw e-commerce transactions into segments a marketing team can act on — built on real UK retail data.
+
+**TL;DR** — On 4,338 real customers, the top 29% ("Champions") generate **70% of revenue**. The notebook cleans 541,909 raw transactions, scores every customer on Recency, Frequency and Monetary value, and maps them to four segments with a concrete play for each.
+
+![Python](https://img.shields.io/badge/python-3.12-blue) ![pandas](https://img.shields.io/badge/pandas-RFM-150458) ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
 ## Business Problem
 
-Most retail and e-commerce businesses treat all customers the same. They send the same promotions, the same emails, the same offers — to Champions who buy every two weeks and to customers who haven't purchased in six months.
+Most retail and e-commerce businesses treat all customers the same. They send the same promotions, the same emails, the same offers — to Champions who buy every month and to customers who haven't purchased in six months.
 
-This project replaces that one-size-fits-all approach with a **data-driven segmentation system** that answers three questions:
+This project replaces that one-size-fits-all approach with a **data-driven segmentation** that answers two questions:
 
 1. **Who are my best customers, and what makes them different?**
-2. **Which customers are slipping away, and how do I win them back?**
-3. **Which new customers look like my best ones, and how do I find more of them?**
+2. **Which customers are slipping away, and is it worth winning them back?**
 
 ---
 
 ## Results
 
-### RFM Segmentation — Online Retail II Dataset (541,909 transactions · 4,338 customers)
+### RFM Segmentation — UCI Online Retail (Dec 2010 – Dec 2011 · 541,909 transactions · 4,338 customers)
 
-| Segment | Customers | Revenue Share | Avg Recency | Avg Frequency |
+| Segment | Customers | Revenue share | Avg days since last order | Avg orders in the year |
 |---|---|---|---|---|
-| **Champions** | 1,254 (29%) | ~61% | ~14 days | ~12 orders |
-| Loyal Customers | 596 (14%) | ~22% | ~35 days | ~8 orders |
-| At Risk | 609 (14%) | ~12% | ~130 days | ~5 orders |
-| Lost | 1,879 (43%) | ~5% | ~200+ days | ~1 order |
+| **Champions** | 1,254 (29%) | **70.5%** | 14 | 9.3 |
+| Loyal Customers | 596 (14%) | 13.6% | 91 | 5.3 |
+| At Risk | 609 (14%) | 7.8% | 171 | 1.9 |
+| Lost | 1,879 (43%) | 8.1% | 120 | 1.4 |
 
-### Key Business Insight
+![Segment Analysis](notebooks/results/plots/segment_analysis.png)
 
-**29% of customers generate ~61% of revenue.**
+### Key Business Insights
 
-This is the Pareto Principle in action. Champions purchase every 14 days on average and place 12+ orders per year. Targeting them with VIP programs, early access, and personalized outreach has a direct, outsized impact on revenue.
+**29% of customers generate 70% of revenue.** Champions ordered about 9 times in the year and most recently two weeks before the snapshot. Retention spend (VIP program, early access, personal outreach) on this group protects most of the business.
 
-**At-Risk customers represent the highest-ROI recovery opportunity.**
+**Loyal Customers are the growth lever.** They order often (5+ times) but have not bought for about three months. Nudging them back to a Champion rhythm is cheaper than winning back lapsed buyers.
 
-These 609 customers were once high spenders — they know the brand and have purchased multiple times. A reactivation campaign with a personalized discount is significantly cheaper than acquiring a new customer with equivalent lifetime value.
-
-![Segment Analysis](results/plots/segment_analysis.png)
+**At Risk is smaller than it looks.** These 609 customers scored in the top three quintiles on frequency or spend, but ordered only about twice on average, and their last order is almost six months old. They are worth one targeted reactivation campaign, measured against a control group, rather than a large discount budget.
 
 ---
 
 ## Pipeline Architecture
 
 ```
-Raw Data (Online Retail II .xlsx)
+Raw Data (UCI Online Retail .xlsx)
         │
         ▼
 [ Data Cleaning ]
   Remove cancellations (Invoice starts with 'C')
   Drop missing Customer IDs
   Remove negative quantities and prices
-  Compute line-level spend = Quantity × Price
+  Compute line-level spend = Quantity × UnitPrice
         │
         ▼
 [ RFM Computation ]
@@ -92,6 +93,8 @@ elif r <= 2 and (f >= 3 or m >= 3):→ At Risk
 else:                              → Lost
 ```
 
+**Limits.** Segments come from business rules on quintiles, not from a statistical model, so thresholds are a judgment call. "Days since last order" is a snapshot, not a purchase interval. The data covers one year of one retailer, mostly wholesale buyers.
+
 ---
 
 ## Actionable Recommendations
@@ -100,32 +103,47 @@ else:                              → Lost
 |---|---|
 | **Champions** | VIP loyalty program. Early product access. Personalized thank-you outreach. High retention ROI. |
 | **Loyal Customers** | Upsell to higher-margin products. Reward consistency. Nudge toward Champion tier. |
-| **At Risk** | Reactivation campaign with time-limited personalized discount. Surveys to understand churn reason. |
+| **At Risk** | One reactivation campaign with a time-limited offer, tested against a control group. Survey to understand churn reasons. |
 | **Lost** | Low-cost win-back email sequence. If no response after 2 touchpoints, deprioritize. |
-
----
-
-## Dataset
-
-[Online Retail II — UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/502/online+retail+ii)
-
-Real UK e-commerce transactions from 2009–2011. Contains 541,909 records across invoices, products, quantities, and prices — including canceled orders, missing IDs, and negative quantities that required professional cleaning.
 
 ---
 
 ## How to Run
 
-1. Open the notebook in Google Colab:
-   `notebooks/customer_segmentation_rfm.ipynb`
+```bash
+git clone https://github.com/e-1305/Customer-Segmentation-System.git
+cd Customer-Segmentation-System
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cd notebooks
+jupyter notebook CUSTOMER_SEGMENTATION_SYSTEM.ipynb
+```
 
-2. Mount your Google Drive and place `Online_Retail.xlsx` at:
-   `MyDrive/customer-segmentation/data/Online_Retail.xlsx`
+Run all cells. The raw dataset is already in `notebooks/data/`; if it is missing, the notebook downloads it from UCI. Works the same in Google Colab (upload the notebook and the `data/` folder).
 
-3. Run all cells in order. The notebook will:
-   - Download and clean the dataset
-   - Compute RFM metrics
-   - Score and segment all customers
-   - Generate and save visualizations
+---
+
+## Repository Structure
+
+```
+Customer-Segmentation-System/
+├── notebooks/
+│   ├── CUSTOMER_SEGMENTATION_SYSTEM.ipynb   # full pipeline
+│   ├── data/
+│   │   ├── Online_Retail.xlsx               # raw UCI dataset
+│   │   └── transactions.parquet             # cleaned transactions
+│   └── results/plots/segment_analysis.png
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## Dataset
+
+[Online Retail — UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/352/online+retail) (Daqing Chen, 2015), licensed CC BY 4.0.
+
+Real transactions of a UK-based online retailer, 1 Dec 2010 – 9 Dec 2011: 541,909 rows including cancelled orders, missing customer IDs and negative quantities, which the cleaning step removes (397,884 rows kept).
 
 ---
 
@@ -136,13 +154,18 @@ Real UK e-commerce transactions from 2009–2011. Contains 541,909 records acros
 | Data processing | pandas, numpy |
 | Visualization | matplotlib, seaborn |
 | Storage | pyarrow (Parquet) |
-| Environment | Google Colab |
+| Environment | Jupyter / Google Colab |
 
 ---
 
 ## Future Work
 
-- **K-Means clustering** on log-transformed RFM features with UMAP visualization to discover data-driven segments beyond rule-based scoring
+- **K-Means clustering** on log-transformed RFM features with UMAP visualization, to compare data-driven segments with the rule-based ones
 - **Lookalike modeling** with XGBoost to score non-Champion customers by their probability of becoming Champions (AUC-ROC + Precision@K evaluation)
-- **Promotion modeling** to quantify revenue lift from campaigns and pre-position inventory before high-demand periods
-- **Cohort analysis** to track segment migration over time — which Lost customers were once Champions, and when did they leave?
+- **Campaign measurement**: uplift test design for the At Risk reactivation campaign
+
+---
+
+## License
+
+Code under the [MIT License](LICENSE). The dataset belongs to its authors (UCI, CC BY 4.0).
